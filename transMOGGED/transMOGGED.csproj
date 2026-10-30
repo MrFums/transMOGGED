@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>transMOGGED</AssemblyName>
+    <RootNamespace>Transmogged</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+    <!-- Don't put this PC's folder path into the built DLL. -->
+    <PathMap>$(MSBuildProjectDirectory)=/_/</PathMap>
+
+    <!-- point this at your SPT folder, or pass -p:SPTPath=... -->
+    <SPTPath Condition="'$(SPTPath)' == ''">E:\Games\SPT4.1-CLEAN</SPTPath>
+    <Managed>$(SPTPath)\EscapeFromTarkov_Data\Managed</Managed>
+    <BepInExCore>$(SPTPath)\BepInEx\core</BepInExCore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\transMOGGED.Fika\transMOGGED.Fika.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <EmbeddedResource Include="..\transMOGGED.Fika\bin\$(Configuration)\transMOGGED.Fika.dll" LogicalName="transMOGGED.Fika.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx" HintPath="$(BepInExCore)\BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BepInExCore)\0Harmony.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(Managed)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Comfort" HintPath="$(Managed)\Comfort.dll" Private="false" />
+    <Reference Include="Comfort.Unity" HintPath="$(Managed)\Comfort.Unity.dll" Private="false" />
+    <Reference Include="CommonExtensions" HintPath="$(Managed)\CommonExtensions.dll" Private="false" />
+    <Reference Include="ItemComponent.Types" HintPath="$(Managed)\ItemComponent.Types.dll" Private="false" />
+    <Reference Include="ItemTemplate.Types" HintPath="$(Managed)\ItemTemplate.Types.dll" Private="false" />
+    <Reference Include="DissonanceVoip" HintPath="$(Managed)\DissonanceVoip.dll" Private="false" />
+    <Reference Include="Sirenix.Serialization" HintPath="$(Managed)\Sirenix.Serialization.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(Managed)\Unity.TextMeshPro.dll" Private="false" />
+    <Reference Include="UnityEngine" HintPath="$(Managed)\UnityEngine.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(Managed)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(Managed)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(Managed)\UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(Managed)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(Managed)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(Managed)\UnityEngine.UIModule.dll" Private="false" />
+    <Reference Include="Newtonsoft.Json" HintPath="$(Managed)\Newtonsoft.Json.dll" Private="false" />
+  </ItemGroup>
+
+</Project>
