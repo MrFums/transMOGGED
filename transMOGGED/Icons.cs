@@ -106,10 +106,9 @@ namespace Transmogged
             bool loaded = true;
             foreach (KeyValuePair<Item, ItemTemplate> pair in looked)
             {
-                if (Visuals.Ready(pair.Value.Prefab))
-                    continue;
-                Visuals.Want(pair.Value.Prefab);
-                loaded = false;
+                // Current asks for whatever is missing
+                if (!Visuals.Current(pair.Key, out _))
+                    loaded = false;
             }
             return loaded;
         }
@@ -127,7 +126,8 @@ namespace Transmogged
             _rendering = item;
             try
             {
-                creator.FillIconWithNewSpriteAsync(icon, item, size, false, true).HandleExceptions();
+                if (!Camo.FillIcon(creator, icon, item, size))
+                    creator.FillIconWithNewSpriteAsync(icon, item, size, false, true).HandleExceptions();
             }
             finally
             {

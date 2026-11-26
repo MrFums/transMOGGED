@@ -23,7 +23,7 @@ namespace Transmogged
 
         public static bool CanPick => !_inWorld && !InRaid;
 
-        // Alt is a weapon-check modifier in raid, so it only swaps icons with the inventory open
+        // the swap icons key may do something else in raid, so it only swaps icons with the inventory open
         public static bool CanPeek => CanPick || (MonoBehaviourSingleton<CommonUI>.Instantiated && MonoBehaviourSingleton<CommonUI>.Instance.InventoryScreen.isActiveAndEnabled);
 
         private static Sprite Icon
@@ -96,7 +96,9 @@ namespace Transmogged
             try
             {
                 Item item = itemContext?.Item;
-                if (__result == null || item == null || !CanPick || itemContext.ViewType != EItemViewType.Inventory)
+                // PIT FireTeam's teammate loadout screen shows its gear as during matching
+                if (__result == null || item == null || !CanPick
+                    || (itemContext.ViewType != EItemViewType.Inventory && itemContext.ViewType != EItemViewType.InventoryDuringMatching))
                     return;
                 if (!Rules.CanTransmog(item) || !IsMine(item))
                     return;
@@ -129,10 +131,15 @@ namespace Transmogged
             return Owns(session.Profile, root) || Owns(session.ProfileOfPet, root);
         }
 
+        // your own gear and stash, or a copy of them kept by your profile, like PIT FireTeam's teammate loadout screen
         private static bool Owns(Profile profile, Item root)
         {
             Inventory inventory = profile?.Inventory;
-            return inventory != null && (root == inventory.Equipment || root == inventory.Stash);
+            if (inventory == null)
+                return false;
+            if (root == inventory.Equipment || root == inventory.Stash)
+                return true;
+            return (root is InventoryEquipment || root is Stash) && (root.Owner as ItemController)?.ID == profile.ProfileId;
         }
     }
 }

@@ -51,8 +51,9 @@ namespace Transmogged
 
             Plugin.Try("hook worn gear, hidden items still show", () =>
             {
+                // last, so Camo And Stickers has put its decals on skinned gear by then
                 harmony.Patch(AccessTools.Method(typeof(PlayerBody.SlotView), nameof(PlayerBody.SlotView.CreateAndParent)),
-                    postfix: new HarmonyMethod(typeof(Visuals), nameof(HidePostfix)));
+                    postfix: new HarmonyMethod(typeof(Visuals), nameof(HidePostfix)) { priority = Priority.Last });
                 harmony.Patch(AccessTools.Method(typeof(PlayerBody.SlotView), nameof(PlayerBody.SlotView.DestroyCurrentModel)),
                     prefix: new HarmonyMethod(typeof(Visuals), nameof(UnhidePrefix)));
             });
@@ -68,19 +69,8 @@ namespace Transmogged
         {
             try
             {
-                if (!Plugin.Enabled.Value || !Looks.TryGet(__instance, out string templateId))
-                    return;
-
-                ItemTemplate look = Rules.Template(templateId);
-                if (look == null || !Rules.Fits(__instance, look))
-                    return;
-
-                if (!Ready(look.Prefab))
-                {
-                    Want(look.Prefab);
-                    return;
-                }
-                __result = look.Prefab;
+                if (Plugin.Enabled.Value && Current(__instance, out ItemTemplate look))
+                    __result = look.Prefab;
             }
             catch (Exception e)
             {
@@ -88,10 +78,41 @@ namespace Transmogged
             }
         }
 
+        // the look the item's model shows right now: a look that isn't loaded yet is asked for, and the real model
+        // shows until it is
+        public static bool Current(Item item, out ItemTemplate look)
+        {
+            look = null;
+            if (!Looks.TryGet(item, out string templateId))
+                return false;
+
+            ItemTemplate candidate = Rules.Template(templateId);
+            if (candidate == null || !Rules.Fits(item, candidate))
+                return false;
+
+            if (!Ready(candidate.Prefab))
+            {
+                Want(candidate.Prefab);
+                return false;
+            }
+            // gear with mods on borrows their bones from the real model, so that has to be loaded too
+            if (Rules.IsGear(Rules.KindOf(item)) && Rules.HasMods(item) && !BundleLoaded(item.Template.Prefab?.path))
+            {
+                if (Rules.HasModel(item.Template))
+                    Want(item.Template.Prefab);
+                return false;
+            }
+            look = candidate;
+            return true;
+        }
+
         private static void HidePostfix(PlayerBody.SlotView __instance, GameObject model)
         {
             if (Plugin.Enabled.Value && Looks.IsHidden(__instance._item))
+            {
                 SetRendering(model, false);
+                Camo.Unpaint(model);
+            }
         }
 
         // models go back to a pool and get reused
@@ -189,9 +210,9 @@ namespace Transmogged
             return BundleLoaded(key.path);
         }
 
-        private static bool BundleLoaded(string path)
+        public static bool BundleLoaded(string path)
         {
-            if (!Singleton<IEasyAssets>.Instantiated)
+            if (string.IsNullOrEmpty(path) || !Singleton<IEasyAssets>.Instantiated)
                 return false;
             var nodes = Singleton<IEasyAssets>.Instance.System?.Nodes;
             if (nodes == null || !nodes.TryGetValue(path, out Node<IEasyBundle> node))

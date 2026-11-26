@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using BepInEx.Configuration;
 using EFT.InventoryLogic;
 using EFT.UI.DragAndDrop;
 using EFT;
@@ -72,7 +73,8 @@ namespace Transmogged
 
         public static void Tick()
         {
-            bool peeking = Menu.CanPeek && (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+            KeyboardShortcut key = Plugin.PeekKey.Value;
+            bool peeking = key.MainKey != KeyCode.None && Menu.CanPeek && key.IsPressed();
             if (peeking != Icons.Peeking)
             {
                 Icons.Peeking = peeking;

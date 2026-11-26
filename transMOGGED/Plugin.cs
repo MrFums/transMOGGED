@@ -37,11 +37,12 @@ namespace Transmogged
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency(FikaGuid, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(BeltSlotGuid, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(Camo.Guid, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "com.fums.transmogged";
         public const string Name = "Fums-transMOGGED";
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         private const string FikaGuid = "com.fika.core";
         private const string BeltSlotGuid = "com.trenchfoot.beltslot";
 
@@ -52,6 +53,7 @@ namespace Transmogged
         internal static ConfigEntry<bool> ShowBadge;
         internal static ConfigEntry<MenuStyle> Style;
         internal static ConfigEntry<IconMode> ItemIcons;
+        internal static ConfigEntry<KeyboardShortcut> PeekKey;
         internal static ConfigEntry<LooksFollow> Follow;
         internal static ConfigEntry<bool> ExaminedOnly;
 
@@ -80,8 +82,10 @@ namespace Transmogged
                     + "next to its look, and a standalone picker with big tiles.", null, Order(75)));
 
             ItemIcons = Config.Bind("1. General", "Inventory icons", IconMode.RealItem,
-                new ConfigDescription("What item icons show: the real item, or its look. Hold Alt in the inventory to see the other one.",
-                    null, Order(74)));
+                new ConfigDescription("What item icons show: the real item, or its look.", null, Order(74)));
+            PeekKey = Config.Bind("1. General", "Swap icons key", KeyboardShortcut.Empty,
+                new ConfigDescription("Hold this key in the inventory to see the other icon: the look when icons show the real item, "
+                    + "or the real item when they show looks. Empty, so off, by default.", null, Order(74)));
             Follow = Config.Bind("1. General", "Looks follow", LooksFollow.Slot,
                 new ConfigDescription("Slot: a plain item put in an equipment slot or gun slot takes the look last used there, if it fits. "
                     + "Item: a look stays on its one item, and replacements start plain. Either way, an item with its own look keeps it.",
@@ -145,6 +149,8 @@ namespace Transmogged
             Try("hook the inspect window, it won't show the transmog line", () => Card.Apply(harmony));
             Try("hook item views, transmogged items won't be tagged", () => Badges.Apply(harmony));
             Try("hook item icons, they show the real item", () => Icons.Apply(harmony));
+            Try("hook gear mods, a look without a spot for a mod leaves it off", () => Bones.Apply(harmony));
+            Try("hook your trader screen portrait, it shows your real gear", () => Portrait.Apply(harmony));
 
             gameObject.AddComponent<Picker>();
             gameObject.AddComponent<SpotlightPicker>();

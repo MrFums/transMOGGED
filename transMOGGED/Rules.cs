@@ -124,20 +124,25 @@ namespace Transmogged
                 && !Allowed(parent.Filters, look))
                 return false;
 
-            // mods attach by slot name, so every filled slot has to exist on the look
-            if (item is CompoundItem compound)
+            // mods attach to the bone named after their slot, so on a gun every filled slot has to exist on the look.
+            // Gear borrows the bone from its real model when the look has none (see Bones).
+            if (!IsGear(kind) && item is CompoundItem compound)
             {
                 Slot[] lookSlots = (look as CompoundItemTemplate)?.Slots ?? Array.Empty<Slot>();
-                foreach (Slot slot in compound.Slots)
+                foreach (Slot slot in FilledSlots(compound))
                 {
-                    if (slot.ContainedItem == null || slot is ArmorSlot || slot.ContainedItem is ArmorPlate)
-                        continue;
                     if (!lookSlots.Any(s => string.Equals(s.ID, slot.ID, StringComparison.OrdinalIgnoreCase)))
                         return false;
                 }
             }
             return true;
         }
+
+        // slots with a mod in them that the game attaches to a bone; armor plates don't need one
+        public static IEnumerable<Slot> FilledSlots(CompoundItem item) =>
+            item.Slots.Where(s => s.ContainedItem != null && !(s is ArmorSlot) && !(s.ContainedItem is ArmorPlate));
+
+        public static bool HasMods(Item item) => item is CompoundItem compound && FilledSlots(compound).Any();
 
         public static bool Shows(Item item, string templateId) =>
             templateId == Looks.Hidden ? IsGear(KindOf(item)) : Fits(item, Template(templateId));

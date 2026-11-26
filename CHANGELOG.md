@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0
+
+- Gear with mods on it, like a helmet with an NVG mount, ear chops or a face shield, can take any look of its kind. The mods stay on, where the real item has them. Before, it only offered looks with a spot for every mod, and a mod with no spot on the look was left off.
+- AI teammates from PIT FireTeam show the looks of gear you gave them in raid, hidden gear included. The teammate loadout screen has Transmog in the item menu.
+- Your portrait on the trader screens shows your looks.
+- Alt no longer swaps icons. Set your own key in F12 (Swap icons key). It's off until you do.
+- Camo And Stickers: look icons show the item's paint, and hidden gear no longer leaves its paint floating on your character.
+
 ## 1.0.0
 
 First release.

@@ -26,7 +26,7 @@ To update, extract over the old one. To remove, delete `BepInEx\plugins\transMOG
 - **Original** puts an item back.
 - **Hide** takes gear off your character. It still works.
 - Hover the violet tag to see the look.
-- Hold **Alt** in the inventory to swap the icons.
+- Set **Swap icons key** in F12, then hold it in the inventory to swap the icons.
 
 Scopes, lights and the gun itself can't be changed. Suppressors only look like suppressors. Magazines only look like magazines of the same size and caliber.
 
@@ -42,7 +42,8 @@ Press **F12** in game.
 | Show other players looks | Shows looks from other players in Fika. |
 | Mark transmogged items | Shows the violet tag. |
 | Menu style | Integrated matches the game. Spotlight is the bigger violet style. |
-| Inventory icons | Show the real item or the look. Alt shows the other one. |
+| Inventory icons | Show the real item or the look. |
+| Swap icons key | Hold it in the inventory to see the other icon. Off until you set a key. |
 | Looks follow | Slot means a plain item in that slot takes the look. Item means a look stays on its one item. |
 | Examined items only | Only offers looks of items you've examined. |
 

@@ -107,12 +107,14 @@ namespace Transmogged
             return TryGet(itemId, out templateId);
         }
 
+        // another person's gear. Bots count as yours: an AI teammate (PIT FireTeam) wears gear you gave it, and other bots'
+        // item ids are new, so they never match a look of yours.
         private static bool IsOtherPlayer(string profileId)
         {
             if (!Singleton<GameWorld>.Instantiated)
                 return false;
             return Singleton<GameWorld>.Instance.allAlivePlayersByID.TryGetValue(profileId, out Player player)
-                   && player != null && !player.IsYourPlayer;
+                   && player != null && !player.IsYourPlayer && !player.IsAI;
         }
 
         public static bool IsHidden(Item item) => TryGet(item, out string id) && id == Hidden && Rules.IsGear(Rules.KindOf(item));
@@ -195,6 +197,15 @@ namespace Transmogged
                 Linked.Clear();
 
             LinkTree(original, copy);
+            Recount();
+        }
+
+        public static void Unlink(Item copy)
+        {
+            if (copy == null || Linked.Count == 0)
+                return;
+            foreach (Item item in copy.GetAllItems())
+                Linked.Remove(item.Id);
             Recount();
         }
 

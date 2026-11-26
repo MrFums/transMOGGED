@@ -16,7 +16,7 @@ namespace Transmogged.Fika
     // embedded in transMOGGED.dll and only loaded with Fika: WTT's GetTypes() chokes on Fika types otherwise
     public static class Module
     {
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
 
         internal static ManualLogSource Log;
         internal static Func<Item, Dictionary<string, string>> OwnLooks;
