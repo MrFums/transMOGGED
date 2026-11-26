@@ -27,6 +27,7 @@ To update, extract over the old one. To remove, delete `BepInEx\plugins\transMOG
 - **Hide** takes gear off your character. It still works.
 - Hover the violet tag to see the look.
 - Set **Swap icons key** in F12, then hold it in the inventory to swap the icons.
+- Helmet parts (NVGs, mounts, ear chops, face shields) can be transmogged or hidden on their own. Protection and vision stay the real item's.
 
 Scopes, lights and the gun itself can't be changed. Suppressors only look like suppressors. Magazines only look like magazines of the same size and caliber.
 

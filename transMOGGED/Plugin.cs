@@ -121,6 +121,9 @@ namespace Transmogged
             BindKind("3. Gear", Kind.Eyewear, true, 45);
             BindKind("3. Gear", Kind.Headset, true, 44);
             BindKind("3. Gear", Kind.Armband, true, 43);
+            BindKind("3. Gear", Kind.HelmetPart, true, 42,
+                "NVGs, thermals and their mounts, ear pieces and face shields on helmets. Only the look changes: "
+                + "protection, night vision and the face shield's glass stay the real item's.");
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(BeltSlotGuid))
                 BindKind("3. Gear", Kind.Belt, true, 42, "WTT Pack n Strap belts.");
 

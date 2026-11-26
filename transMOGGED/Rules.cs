@@ -32,7 +32,9 @@ namespace Transmogged
         Eyewear,
         Headset,
         Armband,
-        Belt
+        Belt,
+        // NVGs, thermals, their mounts, ear pieces and face shields on a helmet
+        HelmetPart
     }
 
     internal static class Rules
@@ -54,6 +56,7 @@ namespace Transmogged
                 case Kind.RailCover: return "rail cover";
                 case Kind.BodyArmor: return "body armor";
                 case Kind.FaceCover: return "face cover";
+                case Kind.HelmetPart: return "helmet part";
                 default: return kind.ToString().ToLowerInvariant();
             }
         }
@@ -88,11 +91,59 @@ namespace Transmogged
                 case VisorsTemplate _: return Kind.Eyewear;
                 case HeadphonesTemplate _: return Kind.Headset;
                 case ArmBandTemplate _: return Kind.Armband;
+                case ArmorPlateTemplate _: return Kind.None;
+                case NightVisionTemplate _: return Kind.HelmetPart;
+                case ThermalVisionTemplate _: return Kind.HelmetPart;
+                // what's left of armored equipment: ear pieces and face shields that go on helmets
+                case ArmoredEquipmentTemplate _: return Kind.HelmetPart;
                 default: return Kind.None;
             }
         }
 
-        public static Kind KindOf(Item item) => item?.Template == null ? Kind.None : KindOf(item.Template);
+        // a mount is a helmet part on a helmet and a gun part anywhere else; a night vision or thermal device on a gun
+        // is a scope, and those keep their real look
+        public static Kind KindOf(Item item)
+        {
+            if (item?.Template == null)
+                return Kind.None;
+            Kind kind = KindOf(item.Template);
+            if (kind == Kind.Mount && IsGear(KindOf(Host(item))))
+                return Kind.HelmetPart;
+            if (kind == Kind.HelmetPart && Family(item.Template) == 1 && Host(item) is Weapon)
+                return Kind.None;
+            return kind;
+        }
+
+        // the first item above this one that isn't a mod: the gun or the helmet it sits on
+        private static Item Host(Item item)
+        {
+            Item host = item.CurrentAddress?.Container?.ParentItem;
+            for (int depth = 0; depth < 32 && host is Mod; depth++)
+                host = host.CurrentAddress?.Container?.ParentItem;
+            return host;
+        }
+
+        // helmet parts only look like their own sort: armor (ear pieces, face shields), vision devices, or mounts
+        private static int Family(ItemTemplate t)
+        {
+            switch (t)
+            {
+                case NightVisionTemplate _:
+                case ThermalVisionTemplate _:
+                    return 1;
+                case MountTemplate _:
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
+
+        // the kinds a look can have for an item of this kind
+        private static bool LooksLike(Kind itemKind, ItemTemplate look)
+        {
+            Kind kind = KindOf(look);
+            return kind == itemKind || (itemKind == Kind.HelmetPart && kind == Kind.Mount);
+        }
 
         public static bool CanTransmog(Item item)
         {
@@ -113,8 +164,10 @@ namespace Transmogged
         {
             if (item?.Template == null || !HasModel(look) || look._id == item.TemplateId)
                 return false;
-            Kind kind = KindOf(look);
-            if (kind == Kind.None || kind != KindOf(item.Template) || !Plugin.KindEnabled(kind))
+            Kind kind = KindOf(item);
+            if (kind == Kind.None || !LooksLike(kind, look) || !Plugin.KindEnabled(kind))
+                return false;
+            if (kind == Kind.HelmetPart && Family(look) != Family(item.Template))
                 return false;
 
             if (kind == Kind.Magazine && !SameMagazine((MagazineTemplate)item.Template, (MagazineTemplate)look))
@@ -205,7 +258,7 @@ namespace Transmogged
                 return list;
 
             list = Singleton<ItemFactory>.Instance.ItemTemplates.Values
-                .Where(t => KindOf(t) == kind && HasModel(t) && !t.QuestItem && !string.IsNullOrWhiteSpace(Name(t)))
+                .Where(t => LooksLike(kind, t) && HasModel(t) && !t.QuestItem && !string.IsNullOrWhiteSpace(Name(t)))
                 .OrderBy(Name, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
             ByKind[kind] = list;

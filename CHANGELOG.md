@@ -2,6 +2,7 @@
 
 ## 1.1.0
 
+- Helmet parts can be transmogged or hidden: NVGs, thermals and their mounts, ear pieces and face shields. Each only looks like its own sort, and only what fits its slot. Protection, night vision and the face shield's glass stay the real item's. Turn it off in F12 under Gear > Helmet parts.
 - Gear with mods on it, like a helmet with an NVG mount, ear chops or a face shield, can take any look of its kind. The mods stay on, where the real item has them. Before, it only offered looks with a spot for every mod, and a mod with no spot on the look was left off.
 - AI teammates from PIT FireTeam show the looks of gear you gave them in raid, hidden gear included. The teammate loadout screen has Transmog in the item menu.
 - Your portrait on the trader screens shows your looks.

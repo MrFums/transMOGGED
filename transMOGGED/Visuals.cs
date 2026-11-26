@@ -7,6 +7,7 @@ using Diz.DependencyManager;
 using Diz.Jobs;
 using Diz.Resources;
 using EFT;
+using EFT.AssetsManager;
 using EFT.InventoryLogic;
 using EFT.UI.WeaponModding;
 using HarmonyLib;
@@ -24,6 +25,7 @@ namespace Transmogged
         private static readonly Dictionary<WeaponPreview, Item> Previews = new Dictionary<WeaponPreview, Item>();
         private static readonly Queue<ResourceKey> Wanted = new Queue<ResourceKey>();
         private static readonly HashSet<string> Dirty = new HashSet<string>();
+        private static readonly HashSet<GameObject> HiddenModels = new HashSet<GameObject>();
         private static bool _refreshAll;
         private static float _nextPreload;
 
@@ -56,6 +58,8 @@ namespace Transmogged
                     postfix: new HarmonyMethod(typeof(Visuals), nameof(HidePostfix)) { priority = Priority.Last });
                 harmony.Patch(AccessTools.Method(typeof(PlayerBody.SlotView), nameof(PlayerBody.SlotView.DestroyCurrentModel)),
                     prefix: new HarmonyMethod(typeof(Visuals), nameof(UnhidePrefix)));
+                harmony.Patch(AccessTools.Method(typeof(AssetPoolObject), nameof(AssetPoolObject.ReturnToPool), new[] { typeof(AssetPoolObject) }),
+                    prefix: new HarmonyMethod(typeof(Visuals), nameof(PoolPrefix)));
             });
 
             Looks.Changed += ids =>
@@ -108,11 +112,38 @@ namespace Transmogged
 
         private static void HidePostfix(PlayerBody.SlotView __instance, GameObject model)
         {
-            if (Plugin.Enabled.Value && Looks.IsHidden(__instance._item))
+            if (!Plugin.Enabled.Value || model == null)
+                return;
+            if (Looks.IsHidden(__instance._item))
             {
-                SetRendering(model, false);
+                Hide(model);
                 Camo.Unpaint(model);
+                return;
             }
+            // hidden helmet parts: the mods are put on under bones of the model, and the view knows which is which
+            ContainerCollectionView view = model.GetComponent<AssetPoolObject>()?.ContainerCollectionView;
+            if (view == null)
+                return;
+            foreach (ContainerCollectionView.SlotView slot in view.ContainerBones.Values)
+            {
+                if (slot?.ItemView != null && slot.Item != null && Looks.IsHidden(slot.Item))
+                    Hide(slot.ItemView.gameObject);
+            }
+        }
+
+        private static void Hide(GameObject model)
+        {
+            if (HiddenModels.Count > 256)
+                HiddenModels.RemoveWhere(m => m == null);
+            HiddenModels.Add(model);
+            SetRendering(model, false);
+        }
+
+        // a mod's model goes back to the pool on its own, and the next item to use it must show
+        private static void PoolPrefix(AssetPoolObject assetPoolObject)
+        {
+            if (HiddenModels.Count > 0 && assetPoolObject != null && HiddenModels.Remove(assetPoolObject.gameObject))
+                SetRendering(assetPoolObject.gameObject, true);
         }
 
         // models go back to a pool and get reused
