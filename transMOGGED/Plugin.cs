@@ -42,7 +42,7 @@ namespace Transmogged
     {
         public const string Guid = "com.fums.transmogged";
         public const string Name = "Fums-transMOGGED";
-        public const string Version = "1.1.0";
+        public const string Version = "1.1.1";
         private const string FikaGuid = "com.fika.core";
         private const string BeltSlotGuid = "com.trenchfoot.beltslot";
 

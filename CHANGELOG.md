@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Hidden gear stays hidden on AI teammates (PIT FireTeam) and other bots in raid. Before, it showed again as soon as they came into view.
+- Hidden gear stays hidden on other players and their bodies in Fika.
+- Fixed "Couldn't add the mod bones ... stack overflow" warnings when a raid loads. Loose mounts in the loot made the mod loop forever.
+
 ## 1.1.0
 
 - Helmet parts can be transmogged or hidden: NVGs, thermals and their mounts, ear pieces and face shields. Each only looks like its own sort, and only what fits its slot. Protection, night vision and the face shield's glass stay the real item's. Turn it off in F12 under Gear > Helmet parts.

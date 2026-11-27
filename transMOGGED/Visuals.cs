@@ -62,6 +62,22 @@ namespace Transmogged
                     prefix: new HarmonyMethod(typeof(Visuals), nameof(PoolPrefix)));
             });
 
+            // bots, and other players in Fika, are culled: their renderers are turned off out of view and on again in it.
+            // The override sets them after calling the base, so the postfix goes on the override.
+            Plugin.Try("hook culling, hidden gear on bots and other players shows when they come into view", () =>
+                harmony.Patch(AccessTools.Method(typeof(OfflinePlayerCulling), nameof(OfflinePlayerCulling.ApplyVisibleState)),
+                    postfix: new HarmonyMethod(typeof(Visuals), nameof(CullingPostfix))));
+
+            // Fika culls bodies on its own. Found by name: a Fika type in this assembly breaks WTT's GetTypes()
+            Type corpseCulling = AccessTools.TypeByName("Fika.Core.Main.ObservedClasses.ObservedCorpseCulling");
+            if (corpseCulling != null)
+            {
+                Plugin.Try("hook Fika's body culling, hidden gear on bodies shows when they come into view", () =>
+                    harmony.Patch(AccessTools.Method(corpseCulling, "ChangeRendererState")
+                                  ?? throw new MissingMethodException(corpseCulling.Name, "ChangeRendererState"),
+                        postfix: new HarmonyMethod(typeof(Visuals), nameof(CorpseCullingPostfix))));
+            }
+
             Looks.Changed += ids =>
             {
                 foreach (string id in ids)
@@ -112,12 +128,41 @@ namespace Transmogged
 
         private static void HidePostfix(PlayerBody.SlotView __instance, GameObject model)
         {
-            if (!Plugin.Enabled.Value || model == null)
-                return;
-            if (Looks.IsHidden(__instance._item))
+            if (Plugin.Enabled.Value && model != null)
+                HideIn(__instance, model, unpaint: true);
+        }
+
+        // culling turns every renderer of a bot's or another player's body back on when it comes into view, so the
+        // hidden gear is hidden again after it
+        private static void CullingPostfix(OfflinePlayerCulling __instance) => HideAgain(__instance?._player?.PlayerBody);
+
+        private static void CorpseCullingPostfix(object ____observedPlayer) => HideAgain((____observedPlayer as Player)?.PlayerBody);
+
+        private static void HideAgain(PlayerBody body)
+        {
+            try
+            {
+                if (!Plugin.Enabled.Value || body?.SlotViews == null)
+                    return;
+                foreach (PlayerBody.SlotView view in body.SlotViews.GetValuesEnumerator())
+                {
+                    if (view?.Model != null)
+                        HideIn(view, view.Model, unpaint: false);
+                }
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogWarning($"Couldn't hide gear again after culling: {e.Message}");
+            }
+        }
+
+        private static void HideIn(PlayerBody.SlotView slotView, GameObject model, bool unpaint)
+        {
+            if (Looks.IsHidden(slotView._item))
             {
                 Hide(model);
-                Camo.Unpaint(model);
+                if (unpaint)
+                    Camo.Unpaint(model);
                 return;
             }
             // hidden helmet parts: the mods are put on under bones of the model, and the view knows which is which
@@ -149,8 +194,10 @@ namespace Transmogged
         // models go back to a pool and get reused
         private static void UnhidePrefix(PlayerBody.SlotView __instance)
         {
-            if (__instance.Model != null)
-                SetRendering(__instance.Model, true);
+            if (__instance.Model == null)
+                return;
+            HiddenModels.Remove(__instance.Model);
+            SetRendering(__instance.Model, true);
         }
 
         private static void SetRendering(GameObject model, bool on)

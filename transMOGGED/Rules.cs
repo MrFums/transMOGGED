@@ -107,20 +107,28 @@ namespace Transmogged
             if (item?.Template == null)
                 return Kind.None;
             Kind kind = KindOf(item.Template);
-            if (kind == Kind.Mount && IsGear(KindOf(Host(item))))
+            if (kind == Kind.Mount && Host(item) is Item host && IsGear(KindOf(host.Template)))
                 return Kind.HelmetPart;
             if (kind == Kind.HelmetPart && Family(item.Template) == 1 && Host(item) is Weapon)
                 return Kind.None;
             return kind;
         }
 
-        // the first item above this one that isn't a mod: the gun or the helmet it sits on
+        // the first item above this one that isn't a mod: the gun or the helmet it sits on. Null when there is none,
+        // like a loose mount lying in a raid, whose address points back at itself.
         private static Item Host(Item item)
         {
-            Item host = item.CurrentAddress?.Container?.ParentItem;
-            for (int depth = 0; depth < 32 && host is Mod; depth++)
-                host = host.CurrentAddress?.Container?.ParentItem;
-            return host;
+            Item current = item;
+            for (int depth = 0; depth < 32; depth++)
+            {
+                Item parent = current.CurrentAddress?.Container?.ParentItem;
+                if (parent == null || ReferenceEquals(parent, current))
+                    return null;
+                if (!(parent is Mod))
+                    return parent;
+                current = parent;
+            }
+            return null;
         }
 
         // helmet parts only look like their own sort: armor (ear pieces, face shields), vision devices, or mounts

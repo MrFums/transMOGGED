@@ -30,7 +30,7 @@ namespace Transmogged
             {
                 // only looks: a real model without a bone for a mod stays as the game leaves it
                 if (!(collection is CompoundItem item) || itemGameObject == null || !Plugin.Enabled.Value
-                    || !Rules.IsGear(Rules.KindOf(item)) || !Visuals.Current(item, out _))
+                    || !Looks.TryGet(item, out _) || !Rules.IsGear(Rules.KindOf(item)) || !Visuals.Current(item, out _))
                     return;
 
                 Transform root = itemGameObject.transform;
