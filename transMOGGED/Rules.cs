@@ -205,6 +205,18 @@ namespace Transmogged
 
         public static bool HasMods(Item item) => item is CompoundItem compound && FilledSlots(compound).Any();
 
+        // whether the look has a slot of this name that takes this mod, so the look's bone for it is made for the mod.
+        // Slot names are shared between helmets for different things: the FAST's ear piece slot is the Exfil's face
+        // shield slot.
+        public static bool LookTakes(ItemTemplate look, string slotId, Item mod)
+        {
+            Slot own = (look as CompoundItemTemplate)?.Slots?
+                .FirstOrDefault(s => string.Equals(s.ID, slotId, StringComparison.OrdinalIgnoreCase));
+            if (own == null || mod?.Template == null)
+                return false;
+            return own.Filters == null || own.Filters.Length == 0 || Allowed(own.Filters, mod.Template);
+        }
+
         public static bool Shows(Item item, string templateId) =>
             templateId == Looks.Hidden ? IsGear(KindOf(item)) : Fits(item, Template(templateId));
 

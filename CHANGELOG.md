@@ -5,6 +5,7 @@
 - Hidden gear stays hidden on AI teammates (PIT FireTeam) and other bots in raid. Before, it showed again as soon as they came into view.
 - Hidden gear stays hidden on other players and their bodies in Fika.
 - Fixed "Couldn't add the mod bones ... stack overflow" warnings when a raid loads. Loose mounts in the loot made the mod loop forever.
+- A helmet's mods sit where the real helmet has them, even when the look has a spot of the same name for something else. Before, a FAST's RAC headset on a coyote Exfil look hung where the Exfil's face shield goes.
 
 ## 1.1.0
 
